@@ -1,3 +1,0 @@
-﻿  main.cpp
-C:\Users\Jakub Veit\source\repos\KolizeSDL2\KolizeSDL2\main.cpp(311,19): warning C4244: 'argument': conversion from 'float' to 'DWORD', possible loss of data
-  KolizeSDL2.vcxproj -> C:\Users\Jakub Veit\source\repos\KolizeSDL2\x64\Debug\KolizeSDL2.exe
