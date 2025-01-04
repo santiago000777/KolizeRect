@@ -300,7 +300,21 @@ int main(int argc, char* args[]) {
 	bool end = false;
 
 
+	SDL_Surface* surface = SDL_LoadBMP("paddle.bmp");
+	
+	SDL_Texture* picture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect srcBox = { 0, 0, surface->w, surface->h };
+	SDL_FreeSurface(surface);
+
+	SDL_Point point;
+	point.x = rect2->w / 2;
+	point.y = rect2->h / 2;
+
+	SDL_RendererFlip flip = SDL_FLIP_NONE;
+	
+
 	float velocity1 = 3.0f;
+	double angle = 0;
 	//first = std::chrono::high_resolution_clock::now();
 	while (!end) {
 		if (PressedKey(VK_SPACE))
@@ -344,7 +358,8 @@ int main(int argc, char* args[]) {
 		}
 		//vec1 = vec1 + gravity;
 
-
+		int i; 
+		
 		if (PressedKey('w')) {
 			vec2.y = -1;
 		}
@@ -357,6 +372,10 @@ int main(int argc, char* args[]) {
 		if (PressedKey('d')) {
 			vec2.x = 1;
 		}
+		/*if (PressedKey('r')) {
+			angle++;
+			angle = std::fmod(angle, 360);
+		}*/
 
 		Posun(rect1, &vec1, *rect2, &vec2);
 		Posun2(rect2, &vec2, *rect1);
@@ -375,6 +394,8 @@ int main(int argc, char* args[]) {
 			SDL_RenderClear(renderer);
 			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
 			SDL_RenderFillRect(renderer, rect1);
+
+			SDL_RenderCopyEx(renderer, picture, &srcBox, rect2, angle, &point, flip);
 			SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 			SDL_RenderFillRect(renderer, rect2);
 			SDL_RenderPresent(renderer);
@@ -388,10 +409,14 @@ int main(int argc, char* args[]) {
 }
 
 /*
-git init -b <branch>
-git remote add origin master
+git init
+git status
+git add
+git commit -m <msg>
+git branch -M <branch>
+git remote add origin <pathFromGitHub>
 git remote -v
-
+git push origin <branch>
 */
 
 //if ((rect1->x + posun1->x + rect1->w > rect2->x && rect1->x + posun1->x < rect2->x + rect2->w)
