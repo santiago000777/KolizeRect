@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KolizeSDL2", "KolizeSDL2\KolizeSDL2.vcxproj", "{B362B9D6-5385-4B7F-894E-3F4842D782D2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KolizeSOperatory", "KolizeSOperatory\KolizeSOperatory.vcxproj", "{2E5B1D7F-7A3D-4756-8665-446F476CC874}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{B362B9D6-5385-4B7F-894E-3F4842D782D2}.Release|x64.Build.0 = Release|x64
 		{B362B9D6-5385-4B7F-894E-3F4842D782D2}.Release|x86.ActiveCfg = Release|Win32
 		{B362B9D6-5385-4B7F-894E-3F4842D782D2}.Release|x86.Build.0 = Release|Win32
+		{2E5B1D7F-7A3D-4756-8665-446F476CC874}.Debug|x64.ActiveCfg = Debug|x64
+		{2E5B1D7F-7A3D-4756-8665-446F476CC874}.Debug|x64.Build.0 = Debug|x64
+		{2E5B1D7F-7A3D-4756-8665-446F476CC874}.Debug|x86.ActiveCfg = Debug|Win32
+		{2E5B1D7F-7A3D-4756-8665-446F476CC874}.Debug|x86.Build.0 = Debug|Win32
+		{2E5B1D7F-7A3D-4756-8665-446F476CC874}.Release|x64.ActiveCfg = Release|x64
+		{2E5B1D7F-7A3D-4756-8665-446F476CC874}.Release|x64.Build.0 = Release|x64
+		{2E5B1D7F-7A3D-4756-8665-446F476CC874}.Release|x86.ActiveCfg = Release|Win32
+		{2E5B1D7F-7A3D-4756-8665-446F476CC874}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
