@@ -80,7 +80,8 @@ struct HitPoint {
 };
 
 void Posun(Rect& rect, const Vec2f& dir, Vec2f& posun1, HitPoint* pArr1, int pocet1, double vecAngle1, int const angle1, eBodKolize& coll1, eBodKolize& previousColl,
-		   Rect& rect2, Vec2f& posun2, HitPoint* pArr2, int pocet2, int const angle2) {
+		   Rect& rect2, Vec2f& posun2, HitPoint* pArr2, int pocet2, int const angle2,
+		   SDL_Renderer* renderer) {
 	
 	if (coll1 == eBodKolize::NONE) {
 		posun1 = dir;
@@ -91,7 +92,7 @@ void Posun(Rect& rect, const Vec2f& dir, Vec2f& posun1, HitPoint* pArr1, int poc
 			posun1 = { 0.0f, 0.0f };
 			return;
 		}
-		
+
 		Vec2f hitPoint;
 		/*for (int i = 0; i < pocet2; i++) {
 			if (pArr2[i].value == 1) {
@@ -121,10 +122,13 @@ void Posun(Rect& rect, const Vec2f& dir, Vec2f& posun1, HitPoint* pArr1, int poc
 				closestRow = row2[i];
 			}
 		}
+		
+		
 
-		if (closestRow == hitPoint) { // Proc je u dotyku s rohem hitpoint po jednom projeti jiny?
-			
-			Vec2f row1[4];
+
+		Vec2f row1[4];
+		if (closestRow == (hitPoint /*+ dir*/)) { // Proc je u dotyku s rohem hitpoint po jednom projeti jiny?
+
 			row1[0] = pArr1[0].position;
 			row1[1] = pArr1[rect.w].position;
 			row1[2] = pArr1[(rect.w + rect.h * 2) - 1].position;
@@ -139,11 +143,57 @@ void Posun(Rect& rect, const Vec2f& dir, Vec2f& posun1, HitPoint* pArr1, int poc
 			}
 		}
 
+		
 		Vec2f unitVec;
 		prepona = sqrt(pow(closestRow.x - hitPoint.x, 2) + pow(closestRow.y - hitPoint.y, 2));
 		if (prepona != 0.0) {
 			unitVec = { (closestRow.x - hitPoint.x) / (float)prepona, (closestRow.y - hitPoint.y) / (float)prepona };
+		} else {
+			unitVec = dir;
 		}
+
+		Vec2f directionRow;
+		if (closestRow == hitPoint) {
+
+			directionRow = row2[0];
+			for (int i = 1; i < 4; i++) {
+				if (fmodf(abs(row2[i].x - closestRow.x) / unitVec.x, 1.0f) == 0.0f
+				&& fmodf(abs(row2[i].x - closestRow.x) / unitVec.x, 1.0f) == 0.0f) {
+
+					directionRow = row2[i];
+					break;
+				}
+			}
+		}
+		else {
+			directionRow = row1[0];
+			for (int i = 1; i < 4; i++) {
+				if (fmodf(abs(row1[i].x - closestRow.x) / unitVec.x, 1.0f) == 0.0f
+					&& fmodf(abs(row1[i].x - closestRow.x) / unitVec.x, 1.0f) == 0.0f) {
+
+					directionRow = row1[i];
+					break;
+				}
+			}
+		}
+		
+		prepona = sqrt(pow(directionRow.x - hitPoint.x, 2) + pow(directionRow.y - hitPoint.y, 2));	// !!! directionRow skace do rohu obrazovky !!!
+		if (prepona != 0.0) {
+			unitVec = { (directionRow.x - hitPoint.x) / (float)prepona, (directionRow.y - hitPoint.y) / (float)prepona };
+		}
+
+		std::cout << "vypocet\n";
+
+		
+		SDL_Rect pom1 = { hitPoint.x, hitPoint.y, 30, 30 };
+		SDL_Rect pom2 = { directionRow.x, directionRow.y, 30, 30 };
+
+
+		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+		SDL_RenderFillRect(renderer, &pom1);
+		SDL_RenderFillRect(renderer, &pom2);
+		SDL_RenderPresent(renderer);
+		SDL_Delay(100);
 
 		switch (coll1) {
 			case eBodKolize::LEFT: {
@@ -185,6 +235,7 @@ void Posun(Rect& rect, const Vec2f& dir, Vec2f& posun1, HitPoint* pArr1, int poc
 		}
 
 		posun1 = unitVec;
+		std::cout << "x: " << posun1.x << ", y: " << posun1.y << std::endl;
 		
 	}
 
@@ -238,8 +289,11 @@ void Collision(HitPoint* pArr1, int pocet1, const Vec2f& dir1, eBodKolize& coll1
 
 	for (int k = 0; k < pocet1; k++) {
 		for (int i = 0; i < pocet2; i++) {
-			if (round(pArr2[i].position.x)/* + dir2.x*/ == round(pArr1[k].position.x/* + vec1.x*/)/* + dir1.x*/
-			&& round(pArr2[i].position.y)/* + dir2.y*/ == round(pArr1[k].position.y/* + vec1.y*/)/* + dir1.y*/) {
+			if (round(pArr2[i].position.x) == round(pArr1[k].position.x)
+			&& round(pArr2[i].position.y) == round(pArr1[k].position.y)){
+
+			//if (round(pArr2[i].position.x) == int(pArr1[k].position.x/* + vec1.x*/) + dir1.x
+			//&& round(pArr2[i].position.y)/* + dir2.y*/ == int(pArr1[k].position.y/* + vec1.y*/) + dir1.y){
 				
 
 				if (dir1.x > 0 || dir2.x < 0) {
@@ -268,7 +322,7 @@ void Collision(HitPoint* pArr1, int pocet1, const Vec2f& dir1, eBodKolize& coll1
 		}
 	}
 	
-	switch (coll1) {
+	/*switch (coll1) {
 		case eBodKolize::LEFT: {
 			std::cout << "Kolize LEFT\n";
 			break;
@@ -289,7 +343,7 @@ void Collision(HitPoint* pArr1, int pocet1, const Vec2f& dir1, eBodKolize& coll1
 			std::cout << "Porad NONE!\n";
 			break;
 		}
-	}
+	}*/
 }
 
 /*void Collision(HitPoint* pArr1, int pocet1, const Vec2f& dir1, eBodKolize& coll, eBodKolize& previousColl,
@@ -424,8 +478,10 @@ int main(int argc, char* args[]) {
 			__debugbreak();
 		if (PressedKey(VK_ESCAPE))
 			end = true;
+		if (PressedKey(VK_BACK)) {
+			system("cls");
+		}
 		Sleep(deltaTime / 4);
-		system("cls");
 
 		// Je stisknuta klavesa
 		/*vec1.x = 0;
@@ -483,11 +539,11 @@ int main(int argc, char* args[]) {
 		
 		
 		Collision(collisionBox1, 140, dir1, coll1, previousColl1, vec1, collisionBox2, 440, dir2);
-		Posun(rect1, dir1, vec1, collisionBox1, 140, vecAngle1, angle1, coll1, previousColl1, rect2, vec2, collisionBox2, 440, angle2);
+		Posun(rect1, dir1, vec1, collisionBox1, 140, vecAngle1, angle1, coll1, previousColl1, rect2, vec2, collisionBox2, 440, angle2, renderer);
 		
 		
 		Collision(collisionBox2, 440, dir2, coll2, previousColl2, vec2, collisionBox1, 140, dir1);
-		Posun(rect2, dir2, vec2, collisionBox2, 440, vecAngle2, angle2, coll2, previousColl2, rect1, vec1, collisionBox1, 140, angle1);
+		Posun(rect2, dir2, vec2, collisionBox2, 440, vecAngle2, angle2, coll2, previousColl2, rect1, vec1, collisionBox1, 140, angle1, renderer);
 
 		vecAngle1 = 0.0;
 		vecAngle2 = 0.0;
@@ -500,10 +556,6 @@ int main(int argc, char* args[]) {
 			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 			SDL_RenderClear(renderer);
 			SDL_RenderPresent(renderer);
-
-
-
-			SDL_RenderClear(renderer);
 
 			SDL_RenderCopyEx(renderer, picture, &srcBox, &rect1.Round(), angle1, &point1, flip);
 			SDL_RenderCopyEx(renderer, picture, &srcBox, &rect2.Round(), angle2, &point2, flip);
