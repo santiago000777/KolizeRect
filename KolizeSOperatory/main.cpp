@@ -20,6 +20,9 @@ bool PressedKey(short key) {
 	return true;
 }
 
+float Round(float number, float precision) {
+	return round(number / precision) * precision;
+}
 
 struct Vec2f {
 public:
@@ -93,105 +96,149 @@ void Posun(Rect& rect, const Vec2f& dir, Vec2f& posun1, HitPoint* pArr1, int poc
 			return;
 		}
 
-		Vec2f hitPoint;
-		/*for (int i = 0; i < pocet2; i++) {
-			if (pArr2[i].value == 1) {
-				hitPoint = pArr2[i].position;
-				break;
-			}
-		}*/
+		std::vector<Vec2f> hitPoints;
 
 		for (int i = 0; i < pocet1; i++) {
 			if (pArr1[i].value == 1) {
-				hitPoint = pArr1[i].position;
-				break;
+				hitPoints.emplace_back(pArr1[i].position);    // dotyku je vice za sebou nemuze zde byt   break;
+				//break;
 			}
 		}
+
+		Vec2f row1[4];
+		row1[0] = pArr1[0].position;
+		row1[1] = pArr1[rect.w].position;
+		row1[2] = pArr1[(2 * rect.w) + (2 * rect.h) - 1].position;
+		row1[3] = pArr1[(rect.w + rect.h * 2) - 1].position;
 
 		Vec2f row2[4];
 		row2[0] = pArr2[0].position;
 		row2[1] = pArr2[rect2.w].position;
-		row2[2] = pArr2[(rect2.w + rect2.h * 2) - 1].position;
-		row2[3] = pArr2[(2 * rect2.w) + (2 * rect2.h) - 1].position;
+		row2[2] = pArr2[(2 * rect2.w) + (2 * rect2.h) - 1].position;
+		row2[3] = pArr2[(rect2.w + rect2.h * 2) - 1].position;
+		
 
-		Vec2f closestRow;
-		closestRow = row2[0];
-		for (int i = 1; i < 4; i++) {
-			if (abs(closestRow.x - hitPoint.x) + abs(closestRow.y - hitPoint.y) >
-				abs(row2[i].x - hitPoint.x) + abs(row2[i].y - hitPoint.y)) {
-				closestRow = row2[i];
+		auto VypocetPrepony = [](Vec2f start, Vec2f end) {
+			return sqrt(pow(end.x - start.x, 2) + pow(end.y - start.y, 2));
+		};
+
+
+		int closestIndex = 0;
+		Vec2f closestRow = row2[0];
+		Vec2f hitPoint = hitPoints[0];
+
+		for (int k = 0; k < hitPoints.size(); k++) {
+			for (int i = 1; i < 4; i++) {
+				if (abs(closestRow.x - hitPoint.x) + abs(closestRow.y - hitPoint.y) >
+					abs(row2[i].x - hitPoints[k].x) + abs(row2[i].y - hitPoints[k].y)) {
+
+					hitPoint = hitPoints[k];
+
+					closestRow = row2[i];
+					closestIndex = i;
+				}
 			}
 		}
-		
-		
+
+		/*bool condition = false;
+		Vec2f currHitPointIndex;
+		for (int i = 0; i < hitPoints.size(); i++) {
+			if (closestRow == hitPoint) condition = true; currHitP = hitPoints[i];
 
 
-		Vec2f row1[4];
-		if (closestRow == (hitPoint /*+ dir*/)) { // Proc je u dotyku s rohem hitpoint po jednom projeti jiny?
+		}*/
 
-			row1[0] = pArr1[0].position;
-			row1[1] = pArr1[rect.w].position;
-			row1[2] = pArr1[(rect.w + rect.h * 2) - 1].position;
-			row1[3] = pArr1[(2 * rect.w) + (2 * rect.h) - 1].position;
+		Vec2f directionRow;
+		if (closestRow == hitPoint) { // kolize v Collision je ale zde neni!!
 
+			/// -?
+
+			closestIndex = 0;
 			closestRow = row1[0];
 			for (int i = 1; i < 4; i++) {
 				if (abs(closestRow.x - hitPoint.x) + abs(closestRow.y - hitPoint.y) >
 					abs(row1[i].x - hitPoint.x) + abs(row1[i].y - hitPoint.y)) {
 					closestRow = row1[i];
+					closestIndex = i;
 				}
 			}
-		}
 
-		
-		Vec2f unitVec;
-		prepona = sqrt(pow(closestRow.x - hitPoint.x, 2) + pow(closestRow.y - hitPoint.y, 2));
-		if (prepona != 0.0) {
-			unitVec = { (closestRow.x - hitPoint.x) / (float)prepona, (closestRow.y - hitPoint.y) / (float)prepona };
-		} else {
-			unitVec = dir;
-		}
+			/// - 
 
-		Vec2f directionRow;
-		if (closestRow == hitPoint) {
-
-			directionRow = row2[0];
-			for (int i = 1; i < 4; i++) {
-				if (fmodf(abs(row2[i].x - closestRow.x) / unitVec.x, 1.0f) == 0.0f
-				&& fmodf(abs(row2[i].x - closestRow.x) / unitVec.x, 1.0f) == 0.0f) {
-
-					directionRow = row2[i];
-					break;
+			for (int i = 0; i < 4; i++) {
+				if (i == closestIndex || i == (closestIndex + 2) % 4) {
+					continue;
 				}
-			}
-		}
-		else {
-			directionRow = row1[0];
-			for (int i = 1; i < 4; i++) {
-				if (fmodf(abs(row1[i].x - closestRow.x) / unitVec.x, 1.0f) == 0.0f
-					&& fmodf(abs(row1[i].x - closestRow.x) / unitVec.x, 1.0f) == 0.0f) {
 
+				if (round(VypocetPrepony(closestRow, hitPoint)) + round(VypocetPrepony(row1[i], hitPoint)) == round(VypocetPrepony(closestRow, row1[i]))) {
 					directionRow = row1[i];
 					break;
 				}
 			}
 		}
-		
-		prepona = sqrt(pow(directionRow.x - hitPoint.x, 2) + pow(directionRow.y - hitPoint.y, 2));	// !!! directionRow skace do rohu obrazovky !!!
-		if (prepona != 0.0) {
-			unitVec = { (directionRow.x - hitPoint.x) / (float)prepona, (directionRow.y - hitPoint.y) / (float)prepona };
+		else {
+
+			for (int i = 0; i < 4; i++) {
+				if (i == closestIndex || i == (closestIndex + 2) % 4) {
+					continue;
+				}
+
+				if (round(VypocetPrepony(closestRow, hitPoint)) + round(VypocetPrepony(row2[i], hitPoint)) == round(VypocetPrepony(closestRow, row2[i]))) {
+					directionRow = row2[i];
+					break;
+				}
+			}
 		}
 
+		
+		/*if (closestRow == hitPoint) {
+
+			for (int i = 0; i < 4; i++) {
+				if (i == closestIndex || i == (closestIndex + 2) % 4) {
+					continue;
+				}
+
+				if (round(VypocetPrepony(closestRow, hitPoint)) + round(VypocetPrepony(row1[i], hitPoint)) == round(VypocetPrepony(closestRow, row1[i]))) {
+					directionRow = row1[i];
+					break;
+				}
+			}
+
+		} else {
+			for (int i = 0; i < 4; i++) {
+				if (i == closestIndex || i == (closestIndex + 2) % 4) {
+					continue;
+				}
+
+				if (round(VypocetPrepony(closestRow, hitPoint)) + round(VypocetPrepony(row2[i], hitPoint)) == round(VypocetPrepony(closestRow, row2[i]))) {
+					directionRow = row2[i];
+					break;
+				}
+			}
+		}*/
+		
+		Vec2f unitVec;
+		prepona = VypocetPrepony(directionRow, hitPoint);
+		unitVec = { (directionRow.x - hitPoint.x) / (float)prepona, (directionRow.y - hitPoint.y) / (float)prepona };
 		std::cout << "vypocet\n";
 
 		
-		SDL_Rect pom1 = { hitPoint.x, hitPoint.y, 30, 30 };
-		SDL_Rect pom2 = { directionRow.x, directionRow.y, 30, 30 };
-
+		SDL_Rect pom1 = { hitPoint.x, hitPoint.y, 15, 15 };  // blue
+		SDL_Rect pom2 = { directionRow.x, directionRow.y, 15, 15 }; // yellow
+		SDL_Rect pom3 = { closestRow.x, closestRow.y, 15, 15 };  // pink
 
 		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 		SDL_RenderFillRect(renderer, &pom1);
+
+		SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
 		SDL_RenderFillRect(renderer, &pom2);
+
+		SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
+		SDL_RenderFillRect(renderer, &pom3);
+
+		
+
+
 		SDL_RenderPresent(renderer);
 		SDL_Delay(100);
 
@@ -200,7 +247,10 @@ void Posun(Rect& rect, const Vec2f& dir, Vec2f& posun1, HitPoint* pArr1, int poc
 				if (unitVec.x > 0) {
 					unitVec.x *= -1;
 				}
-				if (closestRow.x > hitPoint.x) {
+				/*if (closestRow.x > hitPoint.x) {
+					unitVec.y *= -1;
+				}*/
+				if (closestRow.x < hitPoint.x) {
 					unitVec.y *= -1;
 				}
 				break;
@@ -209,7 +259,10 @@ void Posun(Rect& rect, const Vec2f& dir, Vec2f& posun1, HitPoint* pArr1, int poc
 				if (unitVec.x < 0) {
 					unitVec.x *= -1;
 				}
-				if (closestRow.x < hitPoint.x) {
+				/*if (closestRow.x < hitPoint.x) {
+					unitVec.y *= -1;
+				}*/
+				if (closestRow.x > hitPoint.x) {
 					unitVec.y *= -1;
 				}
 				break;
@@ -218,7 +271,10 @@ void Posun(Rect& rect, const Vec2f& dir, Vec2f& posun1, HitPoint* pArr1, int poc
 				if (unitVec.y > 0) {
 					unitVec.y *= -1;
 				}
-				if (closestRow.y > hitPoint.y) {
+				/*if (closestRow.y > hitPoint.y) {
+					unitVec.x *= -1;
+				}*/
+				if (closestRow.y < hitPoint.y) {
 					unitVec.x *= -1;
 				}
 				break;
@@ -227,7 +283,10 @@ void Posun(Rect& rect, const Vec2f& dir, Vec2f& posun1, HitPoint* pArr1, int poc
 				if (unitVec.y < 0) {
 					unitVec.y *= -1;
 				}
-				if (closestRow.y < hitPoint.y) {
+				/*if (closestRow.y < hitPoint.y) {
+					unitVec.x *= -1;
+				}*/
+				if (closestRow.y > hitPoint.y) {
 					unitVec.x *= -1;
 				}
 				break;
@@ -290,27 +349,19 @@ void Collision(HitPoint* pArr1, int pocet1, const Vec2f& dir1, eBodKolize& coll1
 	for (int k = 0; k < pocet1; k++) {
 		for (int i = 0; i < pocet2; i++) {
 			if (round(pArr2[i].position.x) == round(pArr1[k].position.x)
-			&& round(pArr2[i].position.y) == round(pArr1[k].position.y)){
-
-			//if (round(pArr2[i].position.x) == int(pArr1[k].position.x/* + vec1.x*/) + dir1.x
-			//&& round(pArr2[i].position.y)/* + dir2.y*/ == int(pArr1[k].position.y/* + vec1.y*/) + dir1.y){
-				
+			&& round(pArr2[i].position.y) == round(pArr1[k].position.y)) {
 
 				if (dir1.x > 0 || dir2.x < 0) {
 					coll1 = eBodKolize::RIGHT;
-					//std::cout << "Kolize RIGHT\n";
 				}
 				if (dir1.x < 0 || dir2.x > 0) {
 					coll1 = eBodKolize::LEFT;
-					//std::cout << "Kolize LEFT\n";
 				}
 				if (dir1.y > 0 || dir2.y < 0) {
 					coll1 = eBodKolize::DOWN;
-					//std::cout << "Kolize DOWN\n";
 				}
 				if (dir1.y < 0 || dir2.y > 0) {
 					coll1 = eBodKolize::UP;
-					//std::cout << "Kolize UP\n";
 				}
 
 				pArr1[k].value = 1;
@@ -346,45 +397,6 @@ void Collision(HitPoint* pArr1, int pocet1, const Vec2f& dir1, eBodKolize& coll1
 	}*/
 }
 
-/*void Collision(HitPoint* pArr1, int pocet1, const Vec2f& dir1, eBodKolize& coll, eBodKolize& previousColl,
-			   HitPoint* pArr2, int pocet2, const Vec2f& dir2) {
-	
-	previousColl = coll;
-	coll = eBodKolize::NONE;
-	for (int k = 0; k < pocet2; k++) {
-		for (int i = 0; i < pocet1; i++) {
-			if (pArr2[k].value == pArr1[i].value && coll == eBodKolize::NONE
-				&& roundf(pArr2[k].position.x + dir2.x) == roundf(pArr1[i].position.x + dir1.x)
-				&& roundf(pArr2[k].position.y + dir2.y) == roundf(pArr1[i].position.y + dir1.y)) {
-
-				if (dir1.x > 0) {
-					coll = eBodKolize::RIGHT;
-					std::cout << "Kolize RIGHT\n";
-				}
-				if (dir1.x < 0) {
-					coll = eBodKolize::LEFT;
-					std::cout << "Kolize LEFT\n";
-				}
-				if (dir1.y > 0) {
-					coll = eBodKolize::DOWN;
-					std::cout << "Kolize DOWN\n";
-				}
-				if (dir1.y < 0) {
-					coll = eBodKolize::UP;
-					std::cout << "Kolize UP\n";
-				}
-
-				pArr1[i].value = 1;
-				pArr2[k].value = 1;
-				break;
-
-			} else {
-				pArr2[k].value = 0;
-				pArr1[i].value = 0;
-			}
-		}
-	}
-}*/
 
 int main(int argc, char* args[]) {
 
@@ -403,7 +415,7 @@ int main(int argc, char* args[]) {
 
 	Vec2f gravity(0, 1);
 
-	Rect rect1 = { {500.0f, 260.0f/*300.0f*/}, 30, 40 };
+	Rect rect1 = { {500.0f, 270.0f/*300.0f*/}, 30, 40 };
 	Vec2f vec1(0, 0), dir1 {0, 0};
 	HitPoint collisionBox1[140];
 
