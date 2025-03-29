@@ -1,6 +1,7 @@
 #include "common.h"
 #include "SDL.h"
 
+
 #define FPS		165
 #define ISDEBUG		1
 
